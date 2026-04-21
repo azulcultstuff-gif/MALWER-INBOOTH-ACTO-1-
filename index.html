@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-WER | ACTO I - INVASIÓN</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../core/css/global-fui.css">
+
+    <style>
+        .display-content {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;    
+            padding: 35px 20px 20px 20px; 
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mobile-view {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            text-align: center;
+        }
+        .mobile-view.active { display: flex; }
+
+        .square-media {
+            width: 220px; height: 220px;
+            border: 1px solid var(--cobalt);
+            position: relative; background: #000;
+            margin: 10px 0; overflow: hidden;
+        }
+        .square-media img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+
+        .btn-search-circular {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            border: 2px solid var(--cobalt);
+            background: transparent;
+            color: var(--cobalt);
+            font-family: 'Share Tech Mono';
+            font-size: 0.55rem; 
+            cursor: pointer;
+            margin: 15px 0;
+            display: flex; align-items: center; justify-content: center; 
+            text-align: center; text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .btn-search-circular:hover { box-shadow: 0 0 15px var(--cobalt); background: rgba(0,243,255,0.1); }
+
+        .tuning-wrap {
+            display: flex; align-items: center; gap: 25px; margin-top: 10px;
+        }
+        input[type=range][orient=vertical] {
+            appearance: slider-vertical;
+            width: 12px; height: 180px;
+            background: var(--cobalt);
+            cursor: pointer;
+        }
+
+        .loader-wrap {
+            position: relative; width: 100px; height: 100px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .loader-circle {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 4px solid rgba(0, 243, 255, 0.1);
+            border-top: 4px solid var(--cobalt);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #chat-container-inner {
+            width: 100%; height: 180px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(0,243,255,0.2);
+            padding: 10px; overflow-y: auto;
+            text-align: left; font-size: 0.7rem; margin-bottom: 10px;
+        }
+
+        .screen {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            justify-content: center; align-items: center; flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .screen.active { display: flex; }
+
+        #narration-text {
+            color: var(--cobalt);
+            font-family: 'Share Tech Mono';
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+        .narration-btn {
+            background: transparent;
+            border: 1px solid var(--cobalt);
+            color: var(--cobalt);
+            padding: 12px 30px;
+            font-family: 'Share Tech Mono';
+            cursor: pointer;
+            margin: 10px;
+            transition: 0.3s;
+            letter-spacing: 2px;
+        }
+        .narration-btn:hover { background: var(--cobalt); color: #000; }
+
+        #death-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            color: #ff003c;
+            font-size: 10rem;
+            font-family: 'Share Tech Mono';
+            text-shadow: 0 0 20px #ff003c;
+        }
+
+        .tuned-status-text {
+            font-size: 0.9rem;
+            margin-top: 20px;
+            font-family: 'Share Tech Mono';
+            text-transform: uppercase;
+            transition: all 0.5s ease;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(0, 243, 255, 0.3);
+            opacity: 0.5;
+        }
+        .tuned-status-text.active {
+            color: var(--cobalt);
+            -webkit-text-stroke: 0px transparent;
+            opacity: 1;
+            text-shadow: 0 0 10px var(--cobalt);
+        }
+
+        .enter-btn-tuning {
+            margin-top: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .enter-btn-tuning.active { opacity: 1; pointer-events: auto; }
+
+        .btn-instagram-final {
+            display: inline-block;
+            margin-top: 15px;
+            background: transparent;
+            border: 1px solid var(--cobalt);
+            color: var(--cobalt);
+            padding: 10px 20px;
+            text-decoration: none;
+            font-family: 'Share Tech Mono';
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .btn-instagram-final:hover {
+            background: var(--cobalt);
+            color: #000;
+            box-shadow: 0 0 15px var(--cobalt);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    <div id="death-screen">666</div>
+
+    <div id="screen-intro" class="screen active" style="z-index: 2000; background: #000;">
+        <img src="assets/img/logos.png" id="main-logo-intro" style="width: 300px; opacity: 0; filter: drop-shadow(0 0 10px var(--cobalt));">
+    </div>
+
+    <div id="screen-start" class="screen" style="z-index: 1500; background: rgba(0,0,0,0.9);">
+        <h1 style="font-size: 1.5rem; color: var(--cobalt); margin-bottom: 30px; text-align: center; letter-spacing: 2px; text-transform: uppercase; font-family: 'Share Tech Mono';">
+            Click aquí para comenzar la experiencia
+        </h1>
+        <button onclick="startNarration()" style="font-size: 2rem; padding: 15px 40px; border: 2px solid var(--cobalt); background: transparent; color: var(--cobalt); cursor: pointer; letter-spacing: 5px; font-family: 'Share Tech Mono';">START</button>
+    </div>
+
+    <div id="screen-narration" class="screen" style="z-index: 1400; background: #000;">
+        <div id="narration-text"></div>
+        <div id="narration-choices" style="display: none;">
+            <button class="narration-btn" onclick="bootDevice()">ENCENDER</button>
+            <button class="narration-btn" onclick="triggerDeath()" style="border-color: #ff003c; color: #ff003c;">BOTAR</button>
+        </div>
+    </div>
+
+    <div id="screen-mobile" class="screen">
+        <div id="mobile-frame">
+            <div class="grid-bg"></div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; padding: 8px 15px; position: absolute; width: 100%; top: 12px; left: 0; z-index: 100; box-sizing: border-box;">
+                <span id="clock">00:00</span>
+                <span>📶 5G_EXT</span>
+            </div>
+
+            <div class="display-content">
+                <div id="view-boot" class="mobile-view active">
+                    <h2 style="font-size: 0.8rem; letter-spacing: 3px; margin-bottom: 20px; color: var(--cobalt);">INICIALIZANDO</h2>
+                    <div class="loader-wrap">
+                        <div class="loader-circle"></div>
+                        <div id="boot-percent" style="font-size: 1.5rem; color: var(--cobalt);">0%</div>
+                    </div>
+                </div>
+
+                <div id="view-radar" class="mobile-view">
+                    <h2 style="font-size: 0.75rem; letter-spacing: 2px; color: var(--cobalt); text-transform: uppercase; margin: 0;">Dispositivo de Frecuencia</h2>
+                    <div class="square-media">
+                        <img src="assets/img/universo.png" alt="Universo">
+                        <div id="radar-container" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
+                    </div>
+                    <p style="font-size: 0.65rem; line-height: 1.4; opacity: 0.9; margin: 10px 0;">
+                        Con este dispositivo puedes sintonizar distintas señales desde distintas frecuencias del universo
+                    </p>
+                    <button class="btn-search-circular" onclick="searchFrequencies()">Buscar</button>
+                    <p style="font-style: italic; font-size: 0.55rem; opacity: 0.6;">Pulsa aquí para buscar frecuencias</p>
+                </div>
+
+                <div id="view-tuning" class="mobile-view">
+                    <h3 style="font-size: 0.8rem; margin-bottom: 20px;">STARMAPPING_S6</h3>
+                    <div class="tuning-wrap">
+                        <input type="range" id="freq-slider-vertical" min="0" max="100" step="0.1" value="0" orient="vertical">
+                        <div id="freq-val" style="font-size: 1.5rem; color: var(--cobalt); width: 100px;">0.0 Hz</div>
+                    </div>
+                    <p style="font-size: 0.55rem; opacity: 0.8; margin-top: 15px;">Usa el control de frecuencias para ecualizar y lograr sintonizar la señal</p>
+                    
+                    <h2 id="tuned-text-display" class="tuned-status-text glitch">SEÑAL SINTONIZADA</h2>
+                    <button id="tuned-enter-btn" class="enter-btn-tuning" onclick="switchView('view-profile')">ENTRAR</button>
+                </div>
+
+                <div id="view-profile" class="mobile-view">
+                    <div style="width: 140px; height: 140px; border: 1px solid var(--cobalt); overflow: hidden; background: #111;">
+                        <img src="assets/img/agente.png" style="width:100%; filter: contrast(120%) grayscale(1);">
+                    </div>
+                    <h2 style="margin-top: 15px; font-size: 1rem;">Agente R-BTU</h2>
+                    <button onclick="startChatSequence()">VER MENSAJE</button>
+                </div>
+
+                <div id="view-chat" class="mobile-view">
+                    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 0.6rem; margin-bottom: 5px;">
+                        <span>INVASIÓN_LOG</span>
+                        <span style="cursor:pointer" onclick="switchView('view-profile')">[X]</span>
+                    </div>
+                    
+                    <div id="chat-container-inner"></div>
+                    
+                    <div id="chat-final-content" class="hidden" style="width: 100%; text-align: center; padding: 10px;">
+                        <h1 class="glitch" style="font-size: 1.4rem; color: var(--cobalt); margin-bottom: 15px;">PALABRA CLAVE: BROTE</h1>
+                        <p style="font-size: 0.65rem; font-style: italic; line-height: 1.4; opacity: 0.9;">
+                            La información sobre la infección ha sido fragmentada para evitar que la colonia la borre. 
+                            Si quieres acceder al (CAP 2) y conocer el origen del Brote, comenta la palabra clave en nuestro último reporte de inteligencia.
+                        </p>
+                        <p style="font-size: 0.75rem; color: var(--cobalt); margin-top: 15px; font-weight: bold;">CLICK AQUÍ PARA IR AL INSTAGRAM DE MALWER</p>
+                        <a href="https://www.instagram.com/malwer.co" target="_blank" class="btn-instagram-final">@MALWER.CO</a>
+                    </div>
+
+                    <div id="chat-warning-popup" class="popup hidden" style="position: absolute; width: 90%; z-index: 105; top: 50%; transform: translateY(-50%);">
+                        <div style="font-size: 1.5rem; margin-bottom: 10px;">⚠️</div>
+                        <div style="font-size: 0.75rem; color: var(--glitch-red); margin-bottom: 10px; font-weight: bold;">ADVERTENCIA: Señal inestable, pérdida de datos en curso…</div>
+                        <div style="font-size: 0.55rem; font-style: italic; opacity: 0.8; margin-bottom: 10px; line-height: 1.2;">
+                            Puedes vincular tu dispositivo con el Satélite para poder establecer una conexión segura con el sujeto "Agente R-BTU"
+                        </div>
+                        <div style="font-size: 0.6rem; margin-bottom: 15px; font-weight: bold;">VINCULAR CONEXIÓN DIRECTA CON EL SATÉLITE M-WER</div>
+                        <button onclick="triggerVinculacionSequence()">VINCULAR</button>
+                    </div>
+                </div>
+
+                <div id="view-loading-vinculo" class="mobile-view">
+                    <p style="font-size: 0.7rem; margin-bottom: 15px;">Descargando información y estableciendo conexión</p>
+                    <div style="width: 80%; height: 8px; background: #111; border: 1px solid var(--cobalt);">
+                        <div id="progress-fill-vinculo" style="width: 0%; height: 100%; background: var(--cobalt); box-shadow: 0 0 10px var(--cobalt);"></div>
+                    </div>
+                </div>
+
+                <div id="view-command-panel" class="mobile-view">
+                    <div class="popup" style="width: 90%;">
+                        <h3 style="font-size: 0.9rem; margin-bottom: 15px; color: var(--cobalt);">PANEL DE COMANDO</h3>
+                        <p style="font-size: 0.65rem; margin-bottom: 15px;">Valida el código de 3 dígitos para poder habilitar la conexión</p>
+                        <input type="text" id="code-input" maxlength="3" placeholder="---" style="background:transparent; border:1px solid var(--cobalt); color:var(--cobalt); font-size:2rem; width:120px; text-align:center; font-family: 'Share Tech Mono';">
+                        <p style="font-size: 0.55rem; font-style: italic; opacity: 0.7; margin: 15px 0 10px 0;">Pista, nos quedan los días contados para…</p>
+                        <button id="btn-validate" onclick="validateCode()" style="width: 100%;">VALIDAR</button>
+                        <div id="validation-msg" style="margin-top: 10px; font-size: 0.8rem; height: 20px;"></div>
+                    </div>
+                </div>
+
+                <div id="mobile-alert" class="popup" style="display:none; position: absolute; z-index: 200; width: 85%;">
+                    <div style="font-size: 0.9rem; margin-bottom: 2px;">📡 SEÑAL DETECTADA</div>
+                    <div style="font-size: 0.6rem; opacity: 0.7; margin-bottom: 15px; letter-spacing: 1px;">Satélite M-WER, Sector 6</div>
+                    <button onclick="goToTuning()" style="width: 100%;">SINTONIZAR</button>
+                </div>
+            </div> 
+        </div> 
+    </div>
+
+    <div id="audio-interface" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1001; display: flex; flex-direction: column; align-items: center; width: 300px; gap: 10px;">
+        <div id="player-container" class="popup" style="width: 100%; margin: 0; padding: 10px; background: rgba(0, 10, 20, 0.9); border: 1px solid rgba(0, 243, 255, 0.1);">
+            <div id="track-status" style="font-size: 0.55rem; color: var(--cobalt); opacity: 0.5;">ESPERANDO SEÑAL...</div>
+            <div id="track-info" style="font-size: 0.8rem; color: #444;">---------</div>
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                <div id="master-play-btn" onclick="togglePartyTrack()" style="cursor: pointer; font-size: 1.2rem; display: none; color: var(--cobalt);">⏵</div>
+                <input type="range" id="master-vol-slider" min="0" max="1" step="0.01" value="0.5" style="margin: 0; height: 4px; flex-grow: 1;">
+            </div>
+        </div>
+        <button id="global-mute-btn" onclick="toggleGlobalMute()" style="margin: 0; padding: 5px 15px; font-size: 0.7rem; width: 100%;">🔊 AUDIO: ON</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
