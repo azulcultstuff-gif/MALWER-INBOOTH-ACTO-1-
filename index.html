@@ -58,14 +58,48 @@
         }
         .btn-search-circular:hover { box-shadow: 0 0 15px var(--cobalt); background: rgba(0,243,255,0.1); }
 
+        /* INTERFAZ DEL DIAL RADIAL SINTONIZADOR */
         .tuning-wrap {
-            display: flex; align-items: center; gap: 25px; margin-top: 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 10px;
         }
-        input[type=range][orient=vertical] {
-            appearance: slider-vertical;
-            width: 12px; height: 180px;
+        .radial-dial-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 2px dashed rgba(0, 243, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            touch-action: none; 
+            user-select: none;
+        }
+        .radial-dial-container:active { cursor: grabbing; }
+        .dial-outer-ring {
+            position: absolute;
+            width: 130px; height: 130px;
+            border-radius: 50%;
+            border: 2px solid var(--cobalt);
+            box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2), 0 0 10px rgba(0, 243, 255, 0.2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .dial-knob {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            transition: transform 0.05s linear;
+        }
+        .dial-knob::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px; height: 8px;
             background: var(--cobalt);
-            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--cobalt);
         }
 
         .loader-wrap {
@@ -106,6 +140,7 @@
             max-width: 80%;
             line-height: 1.6;
             margin-bottom: 40px;
+            white-space: pre-wrap;
         }
         .narration-btn {
             background: transparent;
@@ -191,7 +226,7 @@
 
     <div id="screen-start" class="screen" style="z-index: 1500; background: rgba(0,0,0,0.9);">
         <h1 style="font-size: 1.5rem; color: var(--cobalt); margin-bottom: 30px; text-align: center; letter-spacing: 2px; text-transform: uppercase; font-family: 'Share Tech Mono';">
-            Click aquí para comenzar la experiencia
+            Click aquí para comenzar la experience
         </h1>
         <button onclick="startNarration()" style="font-size: 2rem; padding: 15px 40px; border: 2px solid var(--cobalt); background: transparent; color: var(--cobalt); cursor: pointer; letter-spacing: 5px; font-family: 'Share Tech Mono';">START</button>
     </div>
@@ -210,6 +245,7 @@
             
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem; padding: 8px 15px; position: absolute; width: 100%; top: 12px; left: 0; z-index: 100; box-sizing: border-box;">
                 <span id="clock">00:00</span>
+                <span style="font-weight: bold; letter-spacing: 1px;">IN-BOOTH</span>
                 <span>📶 5G_EXT</span>
             </div>
 
@@ -228,20 +264,24 @@
                         <img src="assets/img/universo.png" alt="Universo">
                         <div id="radar-container" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
                     </div>
-                    <p style="font-size: 0.65rem; line-height: 1.4; opacity: 0.9; margin: 10px 0;">
+                    <p style="font-size: 0.9rem; line-height: 1.4; opacity: 0.95; margin: 12px 0; font-family: 'Share Tech Mono';">
                         Con este dispositivo puedes sintonizar distintas señales desde distintas frecuencias del universo
                     </p>
                     <button class="btn-search-circular" onclick="searchFrequencies()">Buscar</button>
-                    <p style="font-style: italic; font-size: 0.55rem; opacity: 0.6;">Pulsa aquí para buscar frecuencias</p>
+                    <p style="font-style: italic; font-size: 0.75rem; opacity: 0.7; font-family: 'Share Tech Mono';">Pulsa aquí para buscar frecuencias</p>
                 </div>
 
                 <div id="view-tuning" class="mobile-view">
-                    <h3 style="font-size: 0.8rem; margin-bottom: 20px;">STARMAPPING_S6</h3>
+                    <h3 style="font-size: 0.8rem; margin-bottom: 10px;">STARMAPPING_S6</h3>
                     <div class="tuning-wrap">
-                        <input type="range" id="freq-slider-vertical" min="0" max="100" step="0.1" value="0" orient="vertical">
-                        <div id="freq-val" style="font-size: 1.5rem; color: var(--cobalt); width: 100px;">0.0 Hz</div>
+                        <div id="radial-dial" class="radial-dial-container">
+                            <div class="dial-outer-ring">
+                                <div id="dial-knob-indicator" class="dial-knob"></div>
+                            </div>
+                        </div>
+                        <div id="freq-val" style="font-size: 1.5rem; color: var(--cobalt); width: 120px; font-weight: bold;">0.0 Hz</div>
                     </div>
-                    <p style="font-size: 0.55rem; opacity: 0.8; margin-top: 15px;">Usa el control de frecuencias para ecualizar y lograr sintonizar la señal</p>
+                    <p style="font-size: 0.9rem; opacity: 0.95; margin-top: 15px; font-family: 'Share Tech Mono'; line-height: 1.4;">Gira la rueda de frecuencias para ecualizar y lograr sintonizar la señal</p>
                     
                     <h2 id="tuned-text-display" class="tuned-status-text glitch">SEÑAL SINTONIZADA</h2>
                     <button id="tuned-enter-btn" class="enter-btn-tuning" onclick="switchView('view-profile')">ENTRAR</button>
@@ -265,18 +305,17 @@
                     
                     <div id="chat-final-content" class="hidden" style="width: 100%; text-align: center; padding: 10px;">
                         <h1 class="glitch" style="font-size: 1.4rem; color: var(--cobalt); margin-bottom: 15px;">PALABRA CLAVE: BROTE</h1>
-                        <p style="font-size: 0.65rem; font-style: italic; line-height: 1.4; opacity: 0.9;">
-                            La información sobre la infección ha sido fragmentada para evitar que la colonia la borre. 
-                            Si quieres acceder al (CAP 2) y conocer el origen del Brote, comenta la palabra clave en nuestro último reporte de inteligencia.
+                        <p style="font-size: 0.9rem; line-height: 1.5; opacity: 0.95; font-family: 'Share Tech Mono';">
+                            La información ha sido fragmentada. Si quieres acceder al CAP 2 y conocer el origen de la infección, reporta la palabra clave en nuestro último informe de inteligencia.
                         </p>
-                        <p style="font-size: 0.75rem; color: var(--cobalt); margin-top: 15px; font-weight: bold;">CLICK AQUÍ PARA IR AL INSTAGRAM DE MALWER</p>
+                        <p style="font-size: 0.75rem; color: var(--cobalt); margin-top: 20px; font-weight: bold; letter-spacing: 1px;">IR AL REPORTE EN INSTAGRAM</p>
                         <a href="https://www.instagram.com/malwer.co" target="_blank" class="btn-instagram-final">@MALWER.CO</a>
                     </div>
 
                     <div id="chat-warning-popup" class="popup hidden" style="position: absolute; width: 90%; z-index: 105; top: 50%; transform: translateY(-50%);">
                         <div style="font-size: 1.5rem; margin-bottom: 10px;">⚠️</div>
                         <div style="font-size: 0.75rem; color: var(--glitch-red); margin-bottom: 10px; font-weight: bold;">ADVERTENCIA: Señal inestable, pérdida de datos en curso…</div>
-                        <div style="font-size: 0.55rem; font-style: italic; opacity: 0.8; margin-bottom: 10px; line-height: 1.2;">
+                        <div style="font-size: 0.85rem; font-style: italic; opacity: 0.9; margin-bottom: 12px; line-height: 1.3; font-family: 'Share Tech Mono';">
                             Puedes vincular tu dispositivo con el Satélite para poder establecer una conexión segura con el sujeto "Agente R-BTU"
                         </div>
                         <div style="font-size: 0.6rem; margin-bottom: 15px; font-weight: bold;">VINCULAR CONEXIÓN DIRECTA CON EL SATÉLITE M-WER</div>
@@ -285,7 +324,7 @@
                 </div>
 
                 <div id="view-loading-vinculo" class="mobile-view">
-                    <p style="font-size: 0.7rem; margin-bottom: 15px;">Descargando información y estableciendo conexión</p>
+                    <p style="font-size: 0.9rem; margin-bottom: 15px; font-family: 'Share Tech Mono';">Descargando información y estableciendo conexión</p>
                     <div style="width: 80%; height: 8px; background: #111; border: 1px solid var(--cobalt);">
                         <div id="progress-fill-vinculo" style="width: 0%; height: 100%; background: var(--cobalt); box-shadow: 0 0 10px var(--cobalt);"></div>
                     </div>
@@ -294,9 +333,9 @@
                 <div id="view-command-panel" class="mobile-view">
                     <div class="popup" style="width: 90%;">
                         <h3 style="font-size: 0.9rem; margin-bottom: 15px; color: var(--cobalt);">PANEL DE COMANDO</h3>
-                        <p style="font-size: 0.65rem; margin-bottom: 15px;">Valida el código de 3 dígitos para poder habilitar la conexión</p>
+                        <p style="font-size: 0.85rem; margin-bottom: 15px; font-family: 'Share Tech Mono';">Valida el código de 3 dígitos para poder habilitar la conexión</p>
                         <input type="text" id="code-input" maxlength="3" placeholder="---" style="background:transparent; border:1px solid var(--cobalt); color:var(--cobalt); font-size:2rem; width:120px; text-align:center; font-family: 'Share Tech Mono';">
-                        <p style="font-size: 0.55rem; font-style: italic; opacity: 0.7; margin: 15px 0 10px 0;">Pista, nos quedan los días contados para…</p>
+                        <p style="font-size: 0.8rem; font-style: italic; opacity: 0.8; margin: 15px 0 10px 0; font-family: 'Share Tech Mono';">Pista, nos quedan los días contados para…</p>
                         <button id="btn-validate" onclick="validateCode()" style="width: 100%;">VALIDAR</button>
                         <div id="validation-msg" style="margin-top: 10px; font-size: 0.8rem; height: 20px;"></div>
                     </div>
@@ -317,6 +356,7 @@
             <div id="track-info" style="font-size: 0.8rem; color: #444;">---------</div>
             <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
                 <div id="master-play-btn" onclick="togglePartyTrack()" style="cursor: pointer; font-size: 1.2rem; display: none; color: var(--cobalt);">⏵</div>
+                <span style="font-size: 0.55rem; color: var(--cobalt); font-weight: bold; letter-spacing: 1px;">VOLUMEN:</span>
                 <input type="range" id="master-vol-slider" min="0" max="1" step="0.01" value="0.5" style="margin: 0; height: 4px; flex-grow: 1;">
             </div>
         </div>
