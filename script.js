@@ -1,6 +1,3 @@
-/**
- * M-WER | LÓGICA DE CONTROL - ACTO 1
- */
 
 let partyTrack, ambientTrack, glitchSFX, staticSFX; 
 let isMuted = false;
@@ -9,7 +6,7 @@ function initAudio() {
     if (!partyTrack) {
         partyTrack = new Audio('assets/audio/party_rabteu.mp3');
         partyTrack.loop = true;
-        partyTrack.volume = 0;
+        partyTrack.volume = 0; 
 
         staticSFX = new Audio('assets/audio/static_effect.mp3');
         staticSFX.loop = true;
@@ -22,7 +19,8 @@ function initAudio() {
             if(!isMuted) {
                 if(ambientTrack) ambientTrack.volume = masterVol * 0.2;
                 if(staticSFX && !staticSFX.paused) {
-                    updateTuningAudio(document.getElementById('freq-slider-vertical').value);
+                    const currentFreq = parseFloat(document.getElementById('freq-val').innerText);
+                    updateTuningAudio(currentFreq);
                 }
             }
         });
@@ -51,21 +49,31 @@ window.onload = () => {
 async function startNarration() {
     document.getElementById('screen-start').classList.remove('active');
     document.getElementById('screen-narration').classList.add('active');
+    
     initAudio(); 
+    
+    ambientTrack = new Audio('assets/audio/ambient_loop.mp3');
+    ambientTrack.loop = true;
+    ambientTrack.volume = 0.3;
+    ambientTrack.play().catch(() => {});
 
-    const container = document.getElementById('narration-text');
+    const txtContainer = document.getElementById('narration-text');
+    txtContainer.textContent = ""; 
     
-    // PRIMERA LÍNEA
-    container.innerText = "Te has encontrado un dispositivo extraño en el suelo de una fiesta...";
-    
-    // DELAY DE 5 SEGUNDOS
-    await new Promise(r => setTimeout(r, 5000));
-    
-    // SEGUNDA LÍNEA
-    container.innerText = "Tiene un botón con una luz que no deja de parpadear, parece que de allí se enciende...";
-    
-    // DELAY DE 5 SEGUNDOS
-    await new Promise(r => setTimeout(r, 5000));
+    const frase1 = "Te has encontrado un dispositivo extraño en el suelo de una fiesta...";
+    const frase2 = " tiene un botón con una luz que no deja de par配r, parece que de allí se enciende...";
+
+    for(let char of frase1) {
+        txtContainer.textContent += char;
+        await new Promise(r => setTimeout(r, 55)); 
+    }
+
+    await new Promise(r => setTimeout(r, 1800));
+
+    for(let char of frase2) {
+        txtContainer.textContent += char;
+        await new Promise(r => setTimeout(r, 55));
+    }
 
     document.getElementById('narration-choices').style.display = 'block';
 }
@@ -88,10 +96,7 @@ function bootDevice() {
     document.getElementById('screen-narration').classList.remove('active');
     document.getElementById('screen-mobile').classList.add('active');
     
-    ambientTrack = new Audio('assets/audio/ambient_loop.mp3');
-    ambientTrack.loop = true;
-    ambientTrack.volume = 0.1;
-    ambientTrack.play().catch(() => {});
+    if (ambientTrack) ambientTrack.volume = 0.1;
     initClock();
     
     let percent = 0;
@@ -132,10 +137,48 @@ function goToTuning() {
     document.getElementById('mobile-alert').style.display = 'none';
     switchView('view-tuning');
     partyTrack.play().catch(() => {});
-    document.getElementById('freq-slider-vertical').addEventListener('input', (e) => {
-        const val = parseFloat(e.target.value);
-        document.getElementById('freq-val').innerText = val.toFixed(1) + " Hz";
-        updateTuningAudio(val);
+
+    const dial = document.getElementById('radial-dial');
+    const knob = document.getElementById('dial-knob-indicator');
+    const freqDisplay = document.getElementById('freq-val');
+
+    let isDragging = false;
+
+    function processRotation(e) {
+        const rect = dial.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const pointerX = e.clientX - centerX;
+        const pointerY = e.clientY - centerY;
+
+        let angle = Math.atan2(pointerY, pointerX) * (180 / Math.PI);
+        angle = angle + 90; 
+        if (angle < 0) angle += 360;
+
+        const calculatedFrequency = (angle / 360) * 100;
+
+        knob.style.transform = `rotate(${angle}deg)`;
+        freqDisplay.innerText = calculatedFrequency.toFixed(1) + " Hz";
+
+        updateTuningAudio(calculatedFrequency);
+    }
+
+    dial.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        dial.setPointerCapture(e.pointerId);
+        processRotation(e);
+    });
+
+    dial.addEventListener('pointermove', (e) => {
+        if (isDragging) processRotation(e);
+    });
+
+    dial.addEventListener('pointerup', (e) => {
+        if (isDragging) {
+            isDragging = false;
+            dial.releasePointerCapture(e.pointerId);
+        }
     });
 }
 
@@ -151,7 +194,7 @@ function updateTuningAudio(val) {
         partyTrack.volume = Math.max(0, (masterVol * 0.8) - (distance / 15));
     }
 
-    if(val >= 60 && val <= 70) {
+    if(val >= 66.0 && val <= 67.2) {
         tunedText.classList.add('active');
         enterBtn.classList.add('active');
         document.getElementById('track-status').innerText = "📡 SEÑAL IDENTIFICADA";
@@ -185,10 +228,11 @@ async function startChatSequence() {
         p.style.marginBottom = "8px";
         container.appendChild(p);
         playGlitch();
+        
         for(let char of m) {
-            p.innerHTML += char;
+            p.textContent += char; 
             container.scrollTop = container.scrollHeight;
-            await new Promise(r => setTimeout(r, 40));
+            await new Promise(r => setTimeout(r, 30));
         }
         await new Promise(r => setTimeout(r, 800));
     }
